@@ -8,8 +8,9 @@ HealSense is a comprehensive IoT and AI-driven healthcare monitoring system desi
 - **Real-time Vital Monitoring:** Continuous tracking of Heart Rate (HR), Body Temperature, Blood Oxygen Saturation (SpO₂), Blood Pressure (BP), and Respiratory Rate
 - **Predictive Analytics:** Machine learning models trained to identify early warning signs of cardiac anomalies, fever patterns, hypertension, and respiratory complications
 - **Cloud Integration:** Secure, scalable data storage with real-time synchronization and historical data analysis
-- **Multi-Platform Access:** Web-based dashboard and mobile applications for healthcare providers and patients
-- **Intelligent Alert System:** Automated notifications triggered by anomaly detection algorithms
+- **Mobile-First Platform:** Flutter cross-platform mobile app with direct Bluetooth sensor integration
+- **WhatsApp Integration:** Critical health alerts sent to family members and healthcare providers via WhatsApp
+- **Intelligent Alert System:** Push notifications, WhatsApp messages, and SMS alerts triggered by anomaly detection algorithms
 
 ### Target Applications
 - Remote patient monitoring for elderly and chronic disease patients
@@ -81,30 +82,51 @@ HealSense implements a four-tier architecture designed for scalability, reliabil
 #### 4. Application Layer (Frontend)
 **Purpose:** User interface and interaction  
 **Components:**
-- **Web Dashboard:** React.js/Vue.js responsive SPA
-- **Mobile Application:** Flutter cross-platform app (iOS/Android)
-- **Admin Portal:** Healthcare provider interface with patient management
-- **Visualization:** Real-time charts (Chart.js, D3.js), historical trends, heatmaps
-- **Notification System:** Push notifications, SMS, email alerts
-- **Report Generation:** PDF/Excel export of health reports
+- **Mobile Application (Primary):** Flutter cross-platform app (iOS/Android)
+  - Direct Bluetooth Low Energy (BLE) connection to sensors
+  - Real-time vital signs display with charts
+  - Local data caching for offline mode
+  - Push notification handler
+  - WhatsApp integration for emergency alerts
+  - Camera for QR code scanning (patient ID, medication)
+  - Voice commands for hands-free operation
+- **Web Dashboard (Optional):** React.js responsive SPA for healthcare providers
+- **Notification System:** 
+  - Local Push Notifications (FCM)
+  - WhatsApp Business API integration
+  - SMS alerts via Twilio
+  - Email notifications
+- **Visualization:** Real-time charts (Flutter Charts, Chart.js), historical trends, heatmaps
+- **Report Generation:** PDF export of health reports
 
 **User Roles:**
-- Patient: View personal vitals and predictions
-- Healthcare Provider: Monitor multiple patients, configure alerts
+- Patient: View personal vitals, receive alerts, share data with doctors
+- Family Member: Receive WhatsApp alerts for critical conditions
+- Healthcare Provider: Monitor multiple patients via web dashboard
 - Administrator: System management, user administration
-- Researcher: Access anonymized data for studies
+
+**Mobile App Features:**
+- **Bluetooth Connectivity:** Direct connection to ESP32/Arduino via BLE
+- **Real-Time Monitoring:** Live vital signs display with animations
+- **Alert Management:** Configure alert thresholds and notification preferences
+- **Emergency Contacts:** Quick WhatsApp/call buttons for emergency contacts
+- **Health History:** View trends and historical data
+- **Offline Mode:** Local SQLite database for offline data storage
+- **Multi-language Support:** English, Arabic, Urdu (extensible)
 
 ### System Data Flow
 ```
-[Sensors] → [Microcontroller] → [WiFi/Cellular] → [MQTT Broker] 
+[Sensors] → [Microcontroller] → [Bluetooth] → [Mobile App (Flutter)]
     ↓
-[API Gateway] → [Authentication] → [Database] 
+[Local Processing & Display] → [WiFi/4G] → [API Gateway]
     ↓
-[ML Preprocessing] → [Inference Engine] → [Prediction Results]
+[Authentication] → [Database] → [ML Preprocessing]
     ↓
-[Alert Engine] → [Notification Service] → [User Devices]
+[Inference Engine] → [Prediction Results] → [Alert Engine]
     ↓
-[Dashboard] → [Visualization] → [User Interface]
+[Push Notifications + WhatsApp API] → [Mobile Devices]
+    ↓
+[Real-time Dashboard Updates] → [Family & Healthcare Providers]
 ```
 
 ### Performance Requirements
@@ -149,10 +171,15 @@ HealSense implements a four-tier architecture designed for scalability, reliabil
 | **Time-Series DB** | InfluxDB | 2.7+ | Time-series data optimization |
 | **Message Broker** | MQTT (Mosquitto) | 2.0+ | IoT communication protocol |
 | **Queue System** | RabbitMQ / Redis | 3.12+ / 7.2+ | Task queue management |
-| **Frontend Framework** | React.js | 18+ | Web dashboard |
-| **UI Library** | Material-UI / Ant Design | 5+ / 5+ | Component library |
-| **Mobile Framework** | Flutter | 3.16+ | Cross-platform mobile app |
-| **Charts & Graphs** | Chart.js, D3.js | 4+ / 7+ | Data visualization |
+| **Frontend Framework** | React.js | 18+ | Web dashboard (optional) |
+| **Mobile Framework** | Flutter | 3.16+ | Primary mobile app (iOS/Android) |
+| **Mobile State Management** | Riverpod / Provider | Latest | Flutter state management |
+| **Bluetooth Communication** | flutter_blue_plus | Latest | BLE sensor connectivity |
+| **Local Database** | Sqflite | Latest | Offline data storage |
+| **WhatsApp Integration** | url_launcher + WhatsApp API | Latest | Emergency alerts via WhatsApp |
+| **Push Notifications** | Firebase Cloud Messaging (FCM) | Latest | Real-time mobile notifications |
+| **Charts & Visualization** | fl_chart | Latest | Flutter charts for vitals |
+| **UI Library** | Material-UI / Ant Design | 5+ / 5+ | Web component library (if web) |
 | **API Testing** | Postman, Pytest | Latest | API testing and validation |
 | **Containerization** | Docker | 24+ | Application containerization |
 | **Orchestration** | Docker Compose / Kubernetes | Latest | Container orchestration |
@@ -160,7 +187,7 @@ HealSense implements a four-tier architecture designed for scalability, reliabil
 | **Monitoring** | Prometheus + Grafana | Latest | System monitoring |
 | **Web Server** | Nginx | 1.24+ | Reverse proxy, load balancer |
 | **Cloud Platform** | AWS / Google Cloud / Azure | N/A | Cloud hosting |
-| **Notification** | Twilio / SendGrid / FCM | Latest | SMS, Email, Push notifications |
+| **Notification** | Twilio / SendGrid / FCM / WhatsApp Business API | Latest | SMS, Email, Push, WhatsApp notifications |
 
 ### Development Environment
 
@@ -177,9 +204,9 @@ HealSense implements a four-tier architecture designed for scalability, reliabil
 
 ### Programming Languages
 - **Python 3.10+:** Backend, ML, data processing
-- **JavaScript (ES6+):** Frontend development
-- **Dart:** Flutter mobile development
-- **C/C++:** Arduino firmware
+- **JavaScript (ES6+):** Web frontend development (optional)
+- **Dart:** Flutter mobile development (primary UI)
+- **C/C++:** Arduino/ESP32 firmware
 - **SQL:** Database queries
 - **Shell Scripting:** Automation and deployment
 
