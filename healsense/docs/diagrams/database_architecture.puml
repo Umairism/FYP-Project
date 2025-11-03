@@ -1,0 +1,16 @@
+@startuml HealSense_Database_Architecture
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: Database and Storage Architecture
+
+Container_Boundary(dbSys, "DB Layer") {
+    Container(pg, "PostgreSQL", "Relational DB", "Stores user, patient, alert, and auth data.")
+    Container(influx, "InfluxDB", "Time-Series DB", "Stores continuous sensor readings.")
+    Container(redis, "Redis", "Cache / Queue", "Session caching and message queuing.")
+}
+
+Rel(pg, redis, "Cached reads")
+Rel(influx, redis, "Publishes live vitals")
+Lay_R(pg, influx)
+Lay_D(pg, redis)
+@enduml

@@ -1,0 +1,19 @@
+@startuml HealSense_Mobile_App
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: Mobile Application Architecture
+
+Container_Boundary(app, "Flutter Mobile App") {
+    Component(auth, "Auth Module", "Firebase / JWT", "Login, register, biometric auth.")
+    Component(ble, "BLE Manager", "flutter_blue_plus", "Scans, pairs, and streams from ESP32 sensors.")
+    Component(dashboard, "Vitals Dashboard", "fl_chart", "Displays real-time vitals and trends.")
+    Component(alerts, "Alerts Module", "FCM / WhatsApp API", "Receives and displays notifications.")
+    Component(storage, "Local Storage", "SQLite / Dexie", "Offline data persistence.")
+}
+
+Rel(ble, dashboard, "Streams live vitals")
+Rel(alerts, dashboard, "Updates alerts")
+Rel(auth, storage, "Stores user profile")
+Lay_D(auth, dashboard)
+Lay_R(ble, dashboard)
+@enduml

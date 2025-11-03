@@ -1,0 +1,18 @@
+@startuml HealSense_ML_Pipeline
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: Machine Learning Pipeline (Training + Inference)
+
+Container_Boundary(mlSystem, "ML Pipeline") {
+    Component(prep, "Data Preprocessing", "Python / Pandas / Scikit-learn", "Cleaning, normalization, feature engineering.")
+    Component(train, "Model Training", "TensorFlow / PyTorch", "Trains RF, XGBoost, LSTM, CNN-LSTM models.")
+    Component(eval, "Model Evaluation", "Optuna / sklearn.metrics", "Cross-validation, ROC-AUC, F1-score.")
+    Component(serve, "Model Serving", "TF Serving / FastAPI", "Runs inference on live data (<50ms).")
+}
+
+Rel(prep, train, "Feeds processed data")
+Rel(train, eval, "Validation results")
+Rel(train, serve, "Deploys best model")
+Lay_D(prep, train)
+Lay_D(train, serve)
+@enduml

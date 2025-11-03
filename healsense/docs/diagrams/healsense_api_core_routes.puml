@@ -1,0 +1,25 @@
+@startuml HealSense_API_Core_Routes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+
+title HealSense: FastAPI API Core Routes (Landscape)
+
+Container_Boundary(api, "FastAPI API Gateway") {
+
+    Component(auth, "Authentication", "POST /auth/...", "JWT-based user authentication.")
+    Component(data_ingest, "Data Ingestion", "POST /data/", "Receives sensor data (1–10 Hz).")
+    Component(data_query, "Data Query", "GET /data/...", "Dashboard vitals, historical data.")
+    Component(ml_predict, "ML Prediction", "POST /predict/...", "Risk scoring & anomaly detection.")
+    Component(analytics, "Analytics", "GET /analytics/...", "Aggregated trends and reports.")
+    Component(health, "Probes & Metrics", "GET /health, /metrics", "System health checks.")
+}
+
+Rel(data_ingest, ml_predict, "Triggers inference request")
+Rel(data_query, auth, "Requires valid JWT")
+Rel(ml_predict, analytics, "Feeds processed data for analytics")
+
+Lay_D(auth, data_query)
+Lay_D(data_ingest, ml_predict)
+Lay_R(ml_predict, analytics)
+
+@enduml

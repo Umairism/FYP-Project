@@ -1,0 +1,55 @@
+@startuml HealSense_4_Tier_System_Architecture
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_LEFT_RIGHT()
+
+title HealSense: 4-Tier System Architecture (Landscape)
+
+System_Boundary(healSense, "HealSense Smart Health Surveillance System") {
+
+    ' --- IoT Layer ---
+    Container_Boundary(iotBoundary, "IoT Sensor Layer (Edge)") {
+        System(iot, "ESP32 Sensor Unit", "MAX30100, MLX90614, etc.", "Collects vitals like SpO2, Temp, HR, BP.")
+    }
+
+    ' --- Application Layer ---
+    Container_Boundary(frontend, "Application (Frontend)") {
+        Container(mobile, "Flutter Mobile App", "iOS / Android / Dart", "Vitals display, BLE sync, alerts, offline mode.")
+        Container(web, "React Web Dashboard", "Web SPA / TypeScript", "Provider monitoring, analytics, admin panel.")
+    }
+
+    ' --- Cloud Layer ---
+    Container_Boundary(cloud, "Cloud Backend Services") {
+        Container(api, "FastAPI Gateway", "Python / REST / WebSocket", "Auth, data ingestion, routing, API gateway.")
+        Container(ml, "ML Inference Engine", "TensorFlow / PyTorch", "LSTM & XGBoost models for anomaly detection.")
+        Container(alert, "Alert Service", "Python / Celery", "Dispatches alerts via WA, FCM, SMS.")
+        
+        Container(db, "Database Layer", "PostgreSQL + InfluxDB", "Stores structured patient data & time-series vitals.")
+        Container(redis, "Redis Cache", "Redis / PubSub", "Caching, message queues, fast data access.")
+    }
+}
+
+' --- Relationships ---
+Rel(iot, mobile, "Sends vitals via BLE")
+Rel(iot, api, "Uploads vitals via WiFi/4G")
+Rel(mobile, api, "Sync & Auth via REST / WebSocket")
+Rel(web, api, "Data & Analytics via REST / WebSocket")
+
+Rel(api, ml, "Sends request for inference")
+Rel(ml, api, "Returns health prediction")
+
+Rel(api, db, "Read/Write patient & vitals data")
+Rel(api, redis, "Cache & Pub/Sub for performance")
+
+Rel(api, alert, "Triggers alerts on anomalies")
+Rel(alert, mobile, "Push notifications (FCM)")
+Rel(alert, web, "Email / SMS / WhatsApp alerts")
+
+' --- Layout Hints ---
+Lay_D(api, db)
+Lay_D(api, redis)
+Lay_D(api, ml)
+Lay_D(api, alert)
+Lay_R(iot, mobile)
+Lay_R(web, api)
+
+@enduml

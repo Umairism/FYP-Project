@@ -1,0 +1,27 @@
+@startuml HealSense_Deployment_Workflow
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: Deployment and DevOps Workflow
+
+Deployment_Node(dev, "Developer Environment") {
+    Container(vscode, "VS Code / Git", "Dev Tools")
+    Container(docker, "Docker Compose", "Local containers")
+}
+
+Deployment_Node(ci, "CI/CD Pipeline (GitHub Actions)") {
+    Container(ciBuild, "Build Stage", "Tests, lint, package")
+    Container(ciDeploy, "Deploy Stage", "Pushes image to server")
+}
+
+Deployment_Node(prod, "Production Environment (Cloud)") {
+    Container(api, "FastAPI Backend", "Deployed on container")
+    Container(db, "PostgreSQL + Redis", "Persistent data layer")
+    Container(monitor, "Prometheus / Grafana", "Metrics & monitoring")
+}
+
+Rel(dev, ci, "Push commits")
+Rel(ci, prod, "Deploy containers")
+Rel(prod, monitor, "Sends metrics")
+Lay_D(dev, ci)
+Lay_D(ci, prod)
+@enduml

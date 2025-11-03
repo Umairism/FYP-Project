@@ -1,0 +1,39 @@
+@startuml IoT_Sensor_Node_Interface
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+
+title HealSense: IoT Sensor Node — Hardware Component Interface (Landscape)
+
+' --- Power Supply ---
+Component(power, "5V Power Supply", "Battery / Adapter", "Provides regulated voltage to all components.")
+
+' --- MCU ---
+Container_Boundary(mcuContainer, "Microcontroller Unit") {
+    Component(mcu, "Arduino / ESP32", "MCU", "Data processing and communication control.")
+}
+
+' --- Sensor Layer ---
+Container_Boundary(sensors, "Physiological Sensors") {
+    Component(max, "MAX30100", "HR & SpO₂ Sensor", "I2C Interface")
+    Component(mlx, "MLX90614", "Infrared Thermometer", "I2C Interface")
+    Component(bmp, "BMP180 / BMP280", "Pressure / BP Sensor", "I2C Interface")
+}
+
+' --- Communication ---
+Component(wifi, "ESP8266 / ESP32 WiFi-BLE Module", "Wireless Communication", "BLE + WiFi connectivity to app/cloud.")
+
+' --- Relations ---
+Rel(max, mcu, "SDA/SCL")
+Rel(mlx, mcu, "SDA/SCL")
+Rel(bmp, mcu, "SDA/SCL")
+Rel(mcu, wifi, "Serial TX/RX", "Data link for transmission")
+Rel(power, mcu, "VCC/GND")
+Rel(power, sensors, "VCC/GND")
+Rel(power, wifi, "VCC/GND")
+
+Lay_D(mcu, wifi)
+Lay_D(power, mcu)
+Lay_R(max, mlx)
+Lay_R(mlx, bmp)
+
+@enduml

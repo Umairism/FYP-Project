@@ -1,0 +1,19 @@
+@startuml HealSense_Data_Flow
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: End-to-End Data Flow
+
+Person(patient, "Patient")
+Container(iot, "ESP32 Sensor Unit")
+Container(api, "FastAPI Backend")
+Container(ml, "ML Inference Engine")
+Container(alert, "Alert Service")
+Container(app, "Flutter App")
+
+Rel(patient, iot, "Provides physiological data")
+Rel(iot, api, "Transmits via BLE/WiFi")
+Rel(api, ml, "Requests risk prediction")
+Rel(ml, api, "Returns health score")
+Rel(api, alert, "Triggers alert")
+Rel(alert, app, "Push/WA/SMS alert to patient & family")
+@enduml

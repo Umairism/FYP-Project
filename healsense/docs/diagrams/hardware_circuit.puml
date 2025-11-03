@@ -1,0 +1,19 @@
+@startuml HealSense_Hardware_Circuit
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: Hardware Circuit Connectivity
+
+Component(esp, "ESP32 MCU", "Main Controller")
+Component(max, "MAX30100", "HR & SpO₂ Sensor (I2C)")
+Component(mlx, "MLX90614", "IR Temp Sensor (I2C)")
+Component(bmp, "BMP180", "Pressure Sensor (I2C)")
+Component(power, "5V Power Unit", "Battery / Adapter")
+
+Rel(power, esp, "VCC/GND")
+Rel(power, max, "VCC/GND")
+Rel(power, mlx, "VCC/GND")
+Rel(power, bmp, "VCC/GND")
+Rel(max, esp, "SDA/SCL")
+Rel(mlx, esp, "SDA/SCL")
+Rel(bmp, esp, "SDA/SCL")
+@enduml

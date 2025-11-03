@@ -1,0 +1,16 @@
+@startuml HealSense_Alert_System
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_LEFT_RIGHT()
+title HealSense: Alert & Notification System
+
+Container_Boundary(alertSystem, "Alert Engine") {
+    Component(threshold, "Threshold Evaluator", "Python Logic", "Detects abnormal vitals & ML alerts.")
+    Component(queue, "Queue Manager", "Redis / Celery", "Schedules and manages alert jobs.")
+    Component(dispatch, "Dispatcher", "FastAPI / Twilio / FCM / WA", "Sends Push, WhatsApp, and SMS alerts.")
+}
+
+Rel(threshold, queue, "Sends alert job")
+Rel(queue, dispatch, "Processes and delivers notifications")
+Lay_D(threshold, queue)
+Lay_D(queue, dispatch)
+@enduml
