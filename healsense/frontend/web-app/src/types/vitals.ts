@@ -20,6 +20,13 @@ export interface VitalThresholds {
   respiratoryRate: { min: number; max: number; warningMin: number; warningMax: number };
 }
 
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+  relation: string;
+  type: 'doctor' | 'family';
+}
+
 export interface PatientProfile {
   id: string;
   name: string;
@@ -29,11 +36,7 @@ export interface PatientProfile {
   avatar?: string;
   conditions: string[];
   medications: string[];
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relation: string;
-  };
+  emergencyContacts: EmergencyContact[];
 }
 
 export interface Alert {

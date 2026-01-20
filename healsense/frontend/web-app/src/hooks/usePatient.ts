@@ -5,17 +5,26 @@ import { PatientProfile } from '@/types/vitals';
 // Mock patient for development (when backend is not available)
 const MOCK_PATIENT: PatientProfile = {
   id: '1',
-  name: 'John Anderson',
-  age: 54,
+  name: 'Umair Hakeem',
+  age: 24,
   gender: 'Male',
   bloodType: 'O+',
-  conditions: ['Hypertension', 'Type 2 Diabetes'],
-  medications: ['Metformin 500mg', 'Lisinopril 10mg'],
-  emergencyContact: {
-    name: 'Dr. Sarah Johnson',
-    phone: '+1 (555) 123-4567',
-    relation: 'Primary Care Physician',
-  },
+  conditions: [],
+  medications: [],
+  emergencyContacts: [
+    {
+      name: 'Dr. Ahmed Khan',
+      phone: '+92 300 1234567',
+      relation: 'Primary Care Physician',
+      type: 'doctor',
+    },
+    {
+      name: 'Awais',
+      phone: '03145647685',
+      relation: 'Brother',
+      type: 'family',
+    },
+  ],
 };
 
 export const usePatient = (patientId: string, useMockData: boolean = false) => {

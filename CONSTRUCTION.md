@@ -4856,8 +4856,8 @@ SOFTWARE.
 
 | Role | Name | Contact |
 |------|------|---------|
-| **Lead Developer & Researcher** | Umair Hakeem | umair@healsense.com |
-| **AI/ML Research Advisor** | Sir Farhad M. Riaz | advisor@university.edu |
+| **Lead Developer & Researcher** | Umair Hakeem | iamumair1124@gmail.com |
+| **AI/ML Research Advisor** | Sir Farhad M. Riaz | farhad.muhammad@numl.edu.pk |
 | **IoT Hardware Specialist** | [To be added] | hardware@healsense.com |
 
 ### Acknowledgments
@@ -4881,9 +4881,9 @@ Contributions are welcome! Please:
 
 ## 📞 Contact & Support
 
-**GitHub Repository:** https://github.com/umairhakeem/healsense  
-**Email:** support@healsense.com  
-**Report Issues:** https://github.com/umairhakeem/healsense/issues
+**GitHub Repository:** https://github.com/Umairism/FYP-Project.git
+**Email:** iamumair1124@gmail.com  
+**Report Issues:** https://github.com/Umairism/FYP-Project/issues
 
 ---
 

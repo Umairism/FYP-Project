@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { useVitals, getVitalStatus } from '@/hooks/useVitals';
 import { usePatient } from '@/hooks/usePatient';
 import { API_CONFIG } from '@/lib/config';
@@ -9,9 +11,10 @@ import { HistoryTable } from '@/components/HistoryTable';
 import { PatientHeader } from '@/components/PatientHeader';
 import { EmergencyButton } from '@/components/EmergencyButton';
 import { SettingsDialog } from '@/components/SettingsDialog';
-import { ProfileDialog } from '@/components/ProfileDialog';
 import { AlertsDialog } from '@/components/AlertsDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Heart,
   Wind,
@@ -21,12 +24,18 @@ import {
   LayoutDashboard,
   LineChart,
   Clock,
+  User,
+  LogOut,
+  Settings,
+  Bell,
 } from 'lucide-react';
 
-// TODO: Replace with actual patient ID from auth/routing
-const PATIENT_ID = '1';
-
 export const Dashboard = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const PATIENT_ID = user?.id || '1';
+
   const {
     currentReading,
     readings,
@@ -46,7 +55,6 @@ export const Dashboard = () => {
 
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
 
   useEffect(() => {
@@ -56,6 +64,11 @@ export const Dashboard = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const unacknowledgedAlerts = alerts.filter((a) => !a.acknowledged);
 
@@ -69,16 +82,37 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PatientHeader
-        patient={patient}
-        isConnected={isConnected}
-        alertCount={unacknowledgedAlerts.length}
-        isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenProfile={() => setIsProfileOpen(true)}
-        onOpenAlerts={() => setIsAlertsOpen(true)}
-      />
+      {/* Navigation Header */}
+      <header className="border-b bg-card">
+        <div className="container flex items-center justify-between h-16 px-4">
+          <div className="flex items-center gap-2">
+            <Activity className="h-6 w-6 text-blue-600" />
+            <span className="font-bold text-xl">HealSense</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-muted-foreground hidden md:block">
+              {user?.name} • {user?.age} yrs • {user?.bloodType}
+            </div>
+            <Badge variant={isConnected ? "default" : "destructive"}>
+              {isConnected ? "Connected" : "Disconnected"}
+            </Badge>
+            <Button variant="ghost" size="icon" onClick={() => setIsAlertsOpen(true)}>
+              <Bell className="h-5 w-5" />
+              {unacknowledgedAlerts.length > 0 && (
+                <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] text-white">
+                  {unacknowledgedAlerts.length}
+                </span>
+              )}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+              <User className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </header>
 
       <main className="container py-6 space-y-6">
         {/* Alert Banner */}
@@ -234,11 +268,6 @@ export const Dashboard = () => {
 
       {/* Dialogs */}
       <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
-      <ProfileDialog
-        open={isProfileOpen}
-        onOpenChange={setIsProfileOpen}
-        patient={patient}
-      />
       <AlertsDialog
         open={isAlertsOpen}
         onOpenChange={setIsAlertsOpen}
