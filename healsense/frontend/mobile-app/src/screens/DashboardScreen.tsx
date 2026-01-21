@@ -18,7 +18,7 @@ import AlertBanner from '@/components/AlertBanner';
 import PatientHeader from '@/components/PatientHeader';
 import EmergencyDialog from '@/components/EmergencyDialog';
 
-const PATIENT_ID = '1';
+const PATIENT_ID = 'P001';
 
 const DashboardScreen = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();

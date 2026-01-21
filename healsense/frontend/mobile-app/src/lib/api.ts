@@ -19,18 +19,20 @@ class ApiClient {
 
   async get<T>(endpoint: string): Promise<T> {
     try {
-      const response = await this.client.get<ApiResponse<T>>(endpoint);
-      return response.data.data;
+      const response = await this.client.get<T>(endpoint);
+      // Backend returns data directly, not wrapped in ApiResponse
+      return response.data;
     } catch (error) {
       console.error('API GET Error:', error);
       throw error;
     }
   }
 
-  async post<T>(endpoint: string, data: unknown): Promise<T> {
+  async post<T>(endpoint: string, data: unknown, config?: any): Promise<T> {
     try {
-      const response = await this.client.post<ApiResponse<T>>(endpoint, data);
-      return response.data.data;
+      const response = await this.client.post<T>(endpoint, data, config);
+      // Backend returns data directly, not wrapped in ApiResponse
+      return response.data;
     } catch (error) {
       console.error('API POST Error:', error);
       throw error;
@@ -39,8 +41,9 @@ class ApiClient {
 
   async put<T>(endpoint: string, data: unknown): Promise<T> {
     try {
-      const response = await this.client.put<ApiResponse<T>>(endpoint, data);
-      return response.data.data;
+      const response = await this.client.put<T>(endpoint, data);
+      // Backend returns data directly, not wrapped in ApiResponse
+      return response.data;
     } catch (error) {
       console.error('API PUT Error:', error);
       throw error;
@@ -49,8 +52,9 @@ class ApiClient {
 
   async delete<T>(endpoint: string): Promise<T> {
     try {
-      const response = await this.client.delete<ApiResponse<T>>(endpoint);
-      return response.data.data;
+      const response = await this.client.delete<T>(endpoint);
+      // Backend returns data directly, not wrapped in ApiResponse
+      return response.data;
     } catch (error) {
       console.error('API DELETE Error:', error);
       throw error;
@@ -81,6 +85,27 @@ export const vitalsApi = {
     return apiClient.post<VitalReading>(
       API_ENDPOINTS.vitals(reading.patientId),
       reading
+    );
+  },
+
+  // NEW: Submit vitals from phone sensors
+  createFromPhone: async (
+    patientId: string,
+    data: {
+      device_id: string;
+      heart_rate: number;
+      spo2: number;
+      temperature?: number;
+      activity_context?: string;
+      accuracy?: number;
+      location_lat?: number;
+      location_lng?: number;
+    }
+  ): Promise<any> => {
+    return apiClient.post<any>(
+      `/patients/${patientId}/vitals/phone`,
+      null, // body is empty, data sent as query params
+      { params: data }
     );
   },
 };

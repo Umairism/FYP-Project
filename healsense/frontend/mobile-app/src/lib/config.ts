@@ -4,6 +4,13 @@ const WS_URL = process.env.EXPO_PUBLIC_WS_URL || 'ws://localhost:5000/ws';
 const POLLING_INTERVAL = parseInt(process.env.EXPO_PUBLIC_POLLING_INTERVAL || '5000');
 const USE_MOCK_DATA = process.env.EXPO_PUBLIC_USE_MOCK_DATA === 'true';
 
+// Debug: Log configuration on load
+console.log('📡 API Configuration:');
+console.log('  Base URL:', API_BASE_URL);
+console.log('  WS URL:', WS_URL);
+console.log('  Polling Interval:', POLLING_INTERVAL);
+console.log('  Use Mock Data:', USE_MOCK_DATA);
+
 export const API_CONFIG = {
   baseUrl: API_BASE_URL,
   wsUrl: WS_URL,

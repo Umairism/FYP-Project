@@ -191,7 +191,9 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
 
     const interval = setInterval(async () => {
       try {
+        console.log(`📡 Fetching vitals from: ${API_CONFIG.baseUrl}/patients/${patientId}/vitals/latest`);
         const latestReading = await vitalsApi.getLatest(patientId);
+        console.log('✅ Vitals fetched successfully:', latestReading);
         setReadings((prev) => {
           const updated = [...prev, latestReading];
           return updated.slice(-60);
@@ -199,7 +201,12 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
         checkForAlerts(latestReading);
         setIsConnected(true);
       } catch (error) {
-        console.error('Failed to fetch latest vitals:', error);
+        console.error('❌ Failed to fetch latest vitals:', error);
+        console.error('   API URL:', API_CONFIG.baseUrl);
+        if (error instanceof Error) {
+          console.error('   Error message:', error.message);
+          console.error('   Error stack:', error.stack);
+        }
         setIsConnected(false);
       }
     }, API_CONFIG.pollingInterval);

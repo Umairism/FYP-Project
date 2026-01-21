@@ -13,7 +13,7 @@ import { API_CONFIG } from '@/lib/config';
 import { useDarkMode } from '@/contexts/DarkModeContext';
 import AlertItem from '@/components/AlertItem';
 
-const PATIENT_ID = '1';
+const PATIENT_ID = 'P001';
 
 const AlertsScreen = () => {
   const { isDarkMode } = useDarkMode();

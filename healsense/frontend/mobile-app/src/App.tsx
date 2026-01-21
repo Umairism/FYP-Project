@@ -11,6 +11,7 @@ import DashboardScreen from '@/screens/DashboardScreen';
 import AlertsScreen from '@/screens/AlertsScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 import SettingsScreen from '@/screens/SettingsScreen';
+import  {PhoneSensorScreen}  from '@/screens/PhoneSensorScreen';
 import LoginScreen from '@/screens/LoginScreen';
 import SignupScreen from '@/screens/SignupScreen';
 
@@ -20,6 +21,7 @@ const Tab = createBottomTabNavigator();
 
 const tabsConfig = [
   { name: 'Dashboard', component: DashboardScreen, icon: 'home' as const },
+  { name: 'Phone Sensors', component: PhoneSensorScreen, icon: 'phone-portrait' as const },
   { name: 'Alerts', component: AlertsScreen, icon: 'notifications' as const },
   { name: 'Profile', component: ProfileScreen, icon: 'person' as const },
   { name: 'Settings', component: SettingsScreen, icon: 'settings' as const },
