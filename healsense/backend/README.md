@@ -45,6 +45,12 @@ uvicorn api.app:app --host 0.0.0.0 --port 5000 --reload
 - **Interactive API Docs (Swagger)**: http://localhost:5000/api/docs
 - **Alternative Docs (ReDoc)**: http://localhost:5000/api/redoc
 
+### Realtime Streams
+
+- **Global live stream**: `ws://localhost:5000/ws/live`
+- **Patient stream**: `ws://localhost:5000/ws/patients/{patient_id}`
+- **Device stream**: `ws://localhost:5000/ws/devices/{device_id}`
+
 ## 📁 Project Structure
 
 ```

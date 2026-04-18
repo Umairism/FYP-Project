@@ -25,6 +25,7 @@ from api.models.database import (
     HealthStatus,
     DeviceType,
 )
+from api.services.realtime import realtime_manager
 
 router = APIRouter()
 
@@ -202,6 +203,24 @@ async def create_vital_signs(
     db.add(db_vitals)
     db.commit()
     db.refresh(db_vitals)
+
+    await realtime_manager.broadcast_patient(
+        patient_id,
+        "patient.vitals.created",
+        {
+            "vital": {
+                "id": db_vitals.id,
+                "heart_rate": db_vitals.heart_rate,
+                "spo2": db_vitals.spo2,
+                "temperature": db_vitals.temperature,
+                "systolic_bp": db_vitals.systolic_bp,
+                "diastolic_bp": db_vitals.diastolic_bp,
+                "respiratory_rate": db_vitals.respiratory_rate,
+                "status": db_vitals.status.value if db_vitals.status else None,
+                "timestamp": db_vitals.timestamp,
+            }
+        },
+    )
     
     return db_vitals
 
@@ -284,6 +303,33 @@ async def create_vitals_from_phone(
     
     db.commit()
     db.refresh(db_vitals)
+
+    await realtime_manager.broadcast_patient(
+        patient_id,
+        "patient.vitals.phone_created",
+        {
+            "device_id": device_id,
+            "heart_rate": heart_rate,
+            "spo2": spo2,
+            "temperature": temperature,
+            "activity_context": activity_context,
+            "accuracy": accuracy,
+            "status": health_status.value,
+            "alert_created": health_status != HealthStatus.NORMAL,
+        },
+    )
+
+    if health_status in [HealthStatus.WARNING, HealthStatus.CRITICAL]:
+        await realtime_manager.broadcast_patient(
+            patient_id,
+            "patient.alert.created",
+            {
+                "device_id": device_id,
+                "heart_rate": heart_rate,
+                "spo2": spo2,
+                "status": health_status.value,
+            },
+        )
     
     return {
         "message": "Phone vitals recorded successfully",
@@ -316,6 +362,16 @@ async def trigger_emergency(patient_id: str, db: Session = Depends(get_db)):
     
     db.add(emergency)
     db.commit()
+
+    await realtime_manager.broadcast_patient(
+        patient_id,
+        "patient.emergency.triggered",
+        {
+            "emergency_id": emergency.id,
+            "status": emergency.status,
+            "triggered_at": emergency.triggered_at,
+        },
+    )
     
     return {
         "emergency_id": emergency.id,
@@ -360,6 +416,16 @@ async def create_patient(patient: PatientCreate, db: Session = Depends(get_db)):
     db.add(db_patient)
     db.commit()
     db.refresh(db_patient)
+
+    await realtime_manager.broadcast(
+        "patient.created",
+        {
+            "patient_id": db_patient.id,
+            "first_name": db_patient.first_name,
+            "last_name": db_patient.last_name,
+            "created_at": db_patient.created_at,
+        },
+    )
     
     return db_patient
 

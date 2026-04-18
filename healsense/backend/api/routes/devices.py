@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from api.models.schemas import DeviceStatus
 from api.models.database import Device, DeviceType, get_db
+from api.services.realtime import realtime_manager
 
 router = APIRouter()
 
@@ -73,6 +74,16 @@ async def connect_device(device_id: str, patient_id: str, db: Session = Depends(
     
     db.commit()
     db.refresh(device)
+
+    await realtime_manager.broadcast_device(
+        device_id,
+        "device.connected",
+        {
+            "patient_id": patient_id,
+            "connected": True,
+            "last_heartbeat": device.last_heartbeat,
+        },
+    )
     
     return {
         "message": f"Device {device_id} connected to patient {patient_id}",
@@ -96,6 +107,16 @@ async def disconnect_device(device_id: str, db: Session = Depends(get_db)):
     
     db.commit()
     db.refresh(device)
+
+    await realtime_manager.broadcast_device(
+        device_id,
+        "device.disconnected",
+        {
+            "patient_id": device.patient_id,
+            "connected": False,
+            "updated_at": device.updated_at,
+        },
+    )
     
     return {
         "message": f"Device {device_id} disconnected",
@@ -150,6 +171,18 @@ async def register_phone_device(
     
     db.commit()
     db.refresh(device)
+
+    await realtime_manager.broadcast_device(
+        device_id,
+        "device.phone_registered",
+        {
+            "patient_id": data.patient_id,
+            "phone_model": data.phone_model,
+            "phone_os": data.phone_os,
+            "sensors": data.sensors,
+            "connected": True,
+        },
+    )
     
     return {
         "message": message,

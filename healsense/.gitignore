@@ -1,10 +1,11 @@
 # Environment variables
+# Secrets and environment files
 .env
-.env.local
-.env.*.local
-
-# API credentials
-kaggle.json
+.env.*
+!.env.example
+!.env.sample
+**/.env
+**/.env.*
 **/kaggle.json
 
 # Python
@@ -19,9 +20,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-# Only ignore Python lib folders at specific locations
-/lib/
-/lib64/
 parts/
 sdist/
 var/
@@ -34,51 +32,76 @@ wheels/
 venv/
 env/
 ENV/
-.venv
+.venv/
+backend/venv/
+frontend/**/venv/
 
-# IDEs
+# Node / JS / TS
+node_modules/
+frontend/**/node_modules/
+coverage/
+*.tsbuildinfo
+*.vite/
+
+# Mobile / Flutter / React Native build artifacts
+frontend/mobile-app/.dart_tool/
+frontend/mobile-app/.flutter-plugins
+frontend/mobile-app/.flutter-plugins-dependencies
+frontend/mobile-app/.packages
+frontend/mobile-app/build/
+frontend/mobile-app/android/.gradle/
+frontend/mobile-app/android/app/build/
+frontend/mobile-app/android/local.properties
+
+# IDEs and editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
 
 # Jupyter Notebook
-.ipynb_checkpoints
-*.ipynb_checkpoints/
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
-# Data files (too large for git)
+# Data and generated assets
 data/raw/
 data/processed/
 *.csv
 *.data
 *.zip
 *.tar.gz
+*.parquet
+*.feather
 
-# But keep example and documentation files
+# Keep documentation and placeholders inside data folders
 !data/**/*.md
 !data/**/*.txt
 !data/**/README*
 !data/**/INSTRUCTIONS*
 !data/**/.gitkeep
 
-# Model files
+# Model and exported artifacts
 *.h5
 *.pkl
 *.joblib
 *.pth
 *.pt
+*.tflite
 
-# Logs
+# Logs and runtime files
 *.log
 logs/
+*.pid
 
-# Database
+# Databases
 *.db
 *.sqlite
 *.sqlite3
 
-# OS
+# OS files
 Thumbs.db
 .DS_Store
+
+# Misc
+.fake

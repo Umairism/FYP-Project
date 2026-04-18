@@ -14,6 +14,8 @@ import logging
 from api.config import get_settings
 from api.utils.logger import setup_logger
 from api.routes import patients, alerts, devices
+from api.routes import realtime
+from api.routes import ai
 
 # Initialize settings
 settings = get_settings()
@@ -67,6 +69,8 @@ app.add_middleware(
 app.include_router(patients.router, prefix=f"{settings.API_V1_PREFIX}/patients", tags=["Patients"])
 app.include_router(alerts.router, prefix=f"{settings.API_V1_PREFIX}/alerts", tags=["Alerts"])
 app.include_router(devices.router, prefix=f"{settings.API_V1_PREFIX}/devices", tags=["Devices"])
+app.include_router(ai.router, prefix=f"{settings.API_V1_PREFIX}/ai", tags=["AI"])
+app.include_router(realtime.router, tags=["Realtime"])
 
 # Health check endpoint
 @app.get("/health", tags=["Health"])
@@ -88,12 +92,18 @@ async def root():
         "version": "1.0.0",
         "documentation": "/api/docs",
         "health": "/health",
+        "realtime": {
+            "live": "/ws/live",
+            "patient": "/ws/patients/{patient_id}",
+            "device": "/ws/devices/{device_id}"
+        },
         "endpoints": {
             "auth": f"{settings.API_V1_PREFIX}/auth",
             "patients": f"{settings.API_V1_PREFIX}/patients",
             "data": f"{settings.API_V1_PREFIX}/data",
             "predict": f"{settings.API_V1_PREFIX}/predict",
-            "analytics": f"{settings.API_V1_PREFIX}/analytics"
+            "analytics": f"{settings.API_V1_PREFIX}/analytics",
+            "ai": f"{settings.API_V1_PREFIX}/ai"
         }
     }
 

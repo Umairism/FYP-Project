@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from api.models.database import Alert, get_db
+from api.services.realtime import realtime_manager
 
 router = APIRouter()
 
@@ -26,6 +27,16 @@ async def acknowledge_alert(alert_id: str, db: Session = Depends(get_db)):
     
     db.commit()
     db.refresh(alert)
+
+    await realtime_manager.broadcast_patient(
+        alert.patient_id,
+        "alert.acknowledged",
+        {
+            "alert_id": alert_id,
+            "acknowledged": True,
+            "acknowledged_at": alert.acknowledged_at,
+        },
+    )
     
     return {
         "alert_id": alert_id,
@@ -51,6 +62,16 @@ async def dismiss_alert(alert_id: str, db: Session = Depends(get_db)):
     
     db.commit()
     db.refresh(alert)
+
+    await realtime_manager.broadcast_patient(
+        alert.patient_id,
+        "alert.dismissed",
+        {
+            "alert_id": alert_id,
+            "dismissed": True,
+            "dismissed_at": alert.dismissed_at,
+        },
+    )
     
     return {
         "alert_id": alert_id,

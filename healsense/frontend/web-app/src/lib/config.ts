@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
-  wsUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:5000/ws',
+  wsUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:5000',
   pollingInterval: Number(import.meta.env.VITE_POLLING_INTERVAL) || 5000,
   useMockData: import.meta.env.VITE_USE_MOCK_DATA !== 'false', // Default to true
 };
@@ -29,11 +29,12 @@ export const API_ENDPOINTS = {
   // Device/IoT
   deviceStatus: (deviceId: string) => `/devices/${deviceId}/status`,
   deviceConnect: (deviceId: string) => `/devices/${deviceId}/connect`,
+  patientDeviceSources: (patientId: string) => `/devices/patient/${patientId}/sources`,
 };
 
 // WebSocket Topics
 export const WS_TOPICS = {
-  vitals: (patientId: string) => `vitals/${patientId}`,
-  alerts: (patientId: string) => `alerts/${patientId}`,
-  device: (deviceId: string) => `device/${deviceId}`,
+  vitals: (patientId: string) => `ws/patients/${patientId}`,
+  alerts: (patientId: string) => `ws/patients/${patientId}`,
+  device: (deviceId: string) => `ws/devices/${deviceId}`,
 };

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useVitals, getVitalStatus } from '@/hooks/useVitals';
 import { usePatient } from '@/hooks/usePatient';
+import { deviceApi } from '@/lib/api';
 import { API_CONFIG } from '@/lib/config';
 import { VitalCard } from '@/components/VitalCard';
 import { TrendChart } from '@/components/TrendChart';
@@ -41,11 +43,19 @@ export const Dashboard = () => {
     readings,
     alerts,
     isConnected,
+    isRealtimeConnected,
     acknowledgeAlert,
     dismissAlert,
   } = useVitals({ 
     patientId: PATIENT_ID, 
     useMockData: API_CONFIG.useMockData 
+  });
+
+  const { data: sourceData } = useQuery({
+    queryKey: ['patient-device-sources', PATIENT_ID],
+    queryFn: () => deviceApi.getPatientSources(PATIENT_ID),
+    enabled: !API_CONFIG.useMockData,
+    refetchInterval: 10000,
   });
 
   const { data: patient, isLoading: isLoadingPatient } = usePatient(
@@ -71,6 +81,18 @@ export const Dashboard = () => {
   };
 
   const unacknowledgedAlerts = alerts.filter((a) => !a.acknowledged);
+  const overallConnected = API_CONFIG.useMockData ? isConnected : (isRealtimeConnected || isConnected);
+  const connectionMode = API_CONFIG.useMockData
+    ? 'Mock Stream'
+    : (isRealtimeConnected ? 'WebSocket Live' : 'Polling Fallback');
+
+  const fallbackActive = !API_CONFIG.useMockData && !isRealtimeConnected;
+  const sourceDeviceId = API_CONFIG.useMockData
+    ? `PHONE_${PATIENT_ID}`
+    : (sourceData?.primary_source || sourceData?.data_sources?.[0]?.device_id || 'Unknown');
+  const sourceConnected = API_CONFIG.useMockData
+    ? overallConnected
+    : Boolean(sourceData?.data_sources?.find((src) => src.device_id === sourceDeviceId)?.connected);
 
   if (!currentReading || isLoadingPatient || !patient) {
     return (
@@ -93,8 +115,8 @@ export const Dashboard = () => {
             <div className="text-sm text-muted-foreground hidden md:block">
               {user?.name} • {user?.age} yrs • {user?.bloodType}
             </div>
-            <Badge variant={isConnected ? "default" : "destructive"}>
-              {isConnected ? "Connected" : "Disconnected"}
+            <Badge variant={overallConnected ? "default" : "destructive"}>
+              {overallConnected ? "Connected" : "Disconnected"}
             </Badge>
             <Button variant="ghost" size="icon" onClick={() => setIsAlertsOpen(true)}>
               <Bell className="h-5 w-5" />
@@ -115,6 +137,26 @@ export const Dashboard = () => {
       </header>
 
       <main className="container py-6 space-y-6">
+        <div className="rounded-lg border bg-card p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant={overallConnected ? 'default' : 'destructive'}>
+              Stream: {overallConnected ? 'Online' : 'Offline'}
+            </Badge>
+            <Badge variant={isRealtimeConnected ? 'default' : 'secondary'}>
+              Mode: {connectionMode}
+            </Badge>
+            <Badge variant={fallbackActive ? 'secondary' : 'outline'}>
+              Fallback: {fallbackActive ? 'Active' : 'Inactive'}
+            </Badge>
+            <Badge variant={sourceConnected ? 'default' : 'secondary'}>
+              Source: {sourceDeviceId}
+            </Badge>
+            <Badge variant={sourceConnected ? 'outline' : 'destructive'}>
+              IoT Device: {sourceConnected ? 'Connected' : 'Disconnected'}
+            </Badge>
+          </div>
+        </div>
+
         {/* Alert Banner */}
         <AlertBanner
           alerts={alerts}

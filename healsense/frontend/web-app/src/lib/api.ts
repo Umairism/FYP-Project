@@ -28,8 +28,17 @@ class ApiClient {
         throw new Error(error.message || 'API request failed');
       }
 
-      const data: ApiResponse<T> = await response.json();
-      return data.data;
+      const payload = await response.json();
+      if (
+        payload &&
+        typeof payload === 'object' &&
+        'data' in payload &&
+        'success' in payload
+      ) {
+        return (payload as ApiResponse<T>).data;
+      }
+
+      return payload as T;
     } catch (error) {
       console.error('API Error:', error);
       throw error;
@@ -115,6 +124,17 @@ export const deviceApi = {
     return apiClient.get<{ connected: boolean; lastSeen: Date }>(
       API_ENDPOINTS.deviceStatus(deviceId)
     );
+  },
+
+  getPatientSources: async (
+    patientId: string
+  ): Promise<{
+    patient_id: string;
+    data_sources: Array<{ device_id: string; connected: boolean }>;
+    primary_source: string | null;
+    total_devices: number;
+  }> => {
+    return apiClient.get(API_ENDPOINTS.patientDeviceSources(patientId));
   },
 
   connect: async (deviceId: string): Promise<void> => {

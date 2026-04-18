@@ -1,8 +1,3 @@
-import 'package:json_annotation/json_annotation.dart';
-
-part 'vital_reading.g.dart';
-
-@JsonSerializable()
 class VitalReading {
   final double heartRate;
   final double spo2;
@@ -20,6 +15,23 @@ class VitalReading {
     required this.timestamp,
   });
 
-  factory VitalReading.fromJson(Map<String, dynamic> json) => _$VitalReadingFromJson(json);
-  Map<String, dynamic> toJson() => _$VitalReadingToJson(this);
+  factory VitalReading.fromJson(Map<String, dynamic> json) {
+    return VitalReading(
+      heartRate: (json['heartRate'] as num).toDouble(),
+      spo2: (json['spo2'] as num).toDouble(),
+      temperature: (json['temperature'] as num).toDouble(),
+      bloodPressure: json['bloodPressure'] as String,
+      respiratoryRate: (json['respiratoryRate'] as num).toDouble(),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'heartRate': heartRate,
+        'spo2': spo2,
+        'temperature': temperature,
+        'bloodPressure': bloodPressure,
+        'respiratoryRate': respiratoryRate,
+        'timestamp': timestamp.toIso8601String(),
+      };
 }

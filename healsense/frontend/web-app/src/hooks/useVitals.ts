@@ -3,6 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { vitalsApi, alertsApi } from '@/lib/api';
 import { API_CONFIG } from '@/lib/config';
 import { VitalReading, VitalStatus, DEFAULT_THRESHOLDS, Alert } from '@/types/vitals';
+import { useVitalsWebSocket } from '@/hooks/useWebSocket';
+
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  return `vital_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+};
 
 // Mock data generators (only used when useMockData is true)
 const generateVitalReading = (prevReading?: VitalReading): VitalReading => {
@@ -20,7 +29,7 @@ const generateVitalReading = (prevReading?: VitalReading): VitalReading => {
   };
 
   return {
-    id: crypto.randomUUID(),
+    id: generateId(),
     timestamp: new Date(),
     heartRate: Math.round(vary(base.heartRate, 8)),
     spo2: Math.min(100, Math.max(88, Math.round(vary(base.spo2, 2)))),
@@ -76,6 +85,20 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isConnected, setIsConnected] = useState(true);
 
+  const toVitalReading = useCallback((payload: Record<string, unknown>): VitalReading => {
+    const now = new Date();
+    return {
+      id: String(payload.id ?? generateId()),
+      timestamp: new Date(String(payload.timestamp ?? now.toISOString())),
+      heartRate: Number(payload.heart_rate ?? payload.heartRate ?? 0),
+      spo2: Number(payload.spo2 ?? 0),
+      temperature: Number(payload.temperature ?? 0),
+      systolic: Number(payload.systolic_bp ?? payload.systolic ?? 0),
+      diastolic: Number(payload.diastolic_bp ?? payload.diastolic ?? 0),
+      respiratoryRate: Number(payload.respiratory_rate ?? payload.respiratoryRate ?? 0),
+    };
+  }, []);
+
   // Fetch historical vitals from API
   const { data: historicalData } = useQuery<VitalReading[]>({
     queryKey: ['vitals-history', patientId],
@@ -106,8 +129,6 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
     }
   }, [apiAlerts, useMockData]);
 
-  const currentReading = readings[readings.length - 1];
-
   const checkForAlerts = useCallback((reading: VitalReading) => {
     const vitalTypes: (keyof typeof DEFAULT_THRESHOLDS)[] = [
       'heartRate', 'spo2', 'temperature', 'systolic', 'diastolic', 'respiratoryRate'
@@ -121,7 +142,7 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
 
       if (status !== 'normal') {
         newAlerts.push({
-          id: crypto.randomUUID(),
+          id: generateId(),
           type: status,
           vitalType: vital,
           value,
@@ -136,6 +157,22 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
       setAlerts((prev) => [...newAlerts, ...prev].slice(0, 50));
     }
   }, []);
+
+  const currentReading = readings[readings.length - 1];
+
+  const {
+    isConnected: isRealtimeConnected,
+  } = useVitalsWebSocket(patientId, (event: any) => {
+    const payload = event?.payload;
+    if (!payload) return;
+
+    const vitalPayload = payload?.vital ?? payload;
+    const reading = toVitalReading(vitalPayload);
+    if (!reading.heartRate && !reading.spo2 && !reading.temperature) return;
+
+    setReadings((prev) => [...prev, reading].slice(-60));
+    checkForAlerts(reading);
+  });
 
   const acknowledgeAlert = useCallback(async (alertId: string) => {
     if (!useMockData) {
@@ -188,6 +225,11 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
     if (useMockData) return;
 
     const interval = setInterval(async () => {
+      if (isRealtimeConnected) {
+        setIsConnected(true);
+        return;
+      }
+
       try {
         const latestReading = await vitalsApi.getLatest(patientId);
         setReadings((prev) => {
@@ -195,6 +237,7 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
           return updated.slice(-60);
         });
         checkForAlerts(latestReading);
+        setIsConnected(true);
       } catch (error) {
         console.error('Failed to fetch latest vitals:', error);
         setIsConnected(false);
@@ -202,7 +245,7 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
     }, API_CONFIG.pollingInterval);
 
     return () => clearInterval(interval);
-  }, [patientId, checkForAlerts, useMockData]);
+  }, [patientId, checkForAlerts, useMockData, isRealtimeConnected]);
 
   // Simulate connection status (for mock data only)
   useEffect(() => {
@@ -222,6 +265,7 @@ export const useVitals = ({ patientId, useMockData = API_CONFIG.useMockData }: U
     readings,
     alerts,
     isConnected,
+    isRealtimeConnected,
     acknowledgeAlert,
     dismissAlert,
   };
