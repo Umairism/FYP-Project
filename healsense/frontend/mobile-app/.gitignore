@@ -1,87 +1,15 @@
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Expo
-.expo/
-.expo-shared/
-dist/
-web-build/
-
-# Native
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.apk
-*.aab
-*.ipa
-
-# Metro
-.metro-health-check*
-
-# Debug
-yarn-debug.log*
-yarn-error.log*
-
-# macOS
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
 .DS_Store
-*.pem
-
-# Local env files
-.env*.local
-.env
-
-# Typescript
-*.tsbuildinfo
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.project
-.classpath
-.settings/
-
-# Testing
-coverage/
-.nyc_output/
-
-# Temporary files
-*.log
-*.tmp
-*.temp
-
-# Android/Gradle
-android/.gradle/
-android/app/build/
-android/build/
-android/local.properties
-android/.idea/
-android/captures/
-android/app/release/
-
-# iOS/Xcode
-ios/build/
-ios/Pods/
-ios/**/*.pbxuser
-ios/**/*.mode*v*
-ios/**/*.perspectivev*
-ios/**/*~.nib
-ios/**/*.xcworkspace
-!ios/**/*.xcworkspace/contents.xcworkspacedata
-ios/**/*.xcuserdata
-ios/**/*.xcuserdatad
-ios/Podfile.lock
-
-# Watchman
-.watchmanconfig
-
-# Ignore implementation docs (moved to main README)
-*_IMPLEMENTATION.md
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
