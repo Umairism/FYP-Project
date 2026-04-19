@@ -1,103 +1,312 @@
-# 🩺 HealSense Project
+# HealSense Project
 
-**Deep Learning-Based Smart Health Surveillance and Prediction Model**
+## Deep Learning-Based Health Surveillance and Prediction System
 
-[![License](https://img.shields.io/badge/license-Academic-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![React Native](https://img.shields.io/badge/react--native-0.81.5-blue.svg)](https://reactnative.dev/)
-[![TensorFlow](https://img.shields.io/badge/tensorflow-2.x-orange.svg)](https://www.tensorflow.org/)
+HealSense is a comprehensive health monitoring platform that combines machine learning, IoT sensors, and user-friendly applications to provide real-time health risk prediction and monitoring. The system uses LSTM deep learning models to analyze vital signs and deliver intelligent health insights to both patients and healthcare providers.
 
-## 🌟 Overview
+## Overview
 
-HealSense is an AI-powered health monitoring system that uses deep learning to predict health risks from real-time vital signs. The system combines IoT sensors, LSTM neural networks, and mobile/web applications to provide continuous health surveillance with intelligent alerting.
+This project aims to solve the critical challenge of continuous remote patient health monitoring by providing an integrated ecosystem that collects vital signs from multiple sources, processes them through AI models, and delivers actionable insights through mobile and web interfaces.
 
-### Key Features
+### Core Capabilities
 
-- **🤖 AI-Powered Predictions**: LSTM model with 93%+ accuracy for health risk classification
-- **📱 Mobile-First**: React Native app with real-time vital sign monitoring
-- **🌐 Web Dashboard**: React + Vite web application with Shadcn UI
-- **⚡ Real-Time Alerts**: Instant notifications for critical health events
-- **📊 Data-Driven**: Trained on UCI Heart Disease, PhysioNet, and Kaggle datasets
-- **🔒 Secure**: Built with authentication, encryption, and HIPAA compliance in mind
-- **📦 Production-Ready**: TFLite mobile deployment with <5MB model size
+**AI-Powered Health Analysis**: LSTM neural network model trained on real-world medical datasets with over 93% accuracy in classifying health status into Normal, Warning, and Critical states.
 
-## 🚀 Quick Start
+**Multi-Platform Application**: Native mobile app built with Flutter for iOS and Android devices, combined with a modern web dashboard using React and Vite for healthcare providers and family members.
+
+**Real-Time Monitoring**: WebSocket-based real-time streaming of vital sign data ensures instant visibility into patient health status across all connected devices.
+
+**Intelligent Alerting**: Automatic alert generation based on ML predictions and configurable thresholds, with multi-level severity classification and provider acknowledgment workflows.
+
+**Cross-Device Integration**: Support for IoT hardware sensors, mobile phone sensors, wearable devices, and manual data entry, all converging into a unified health data platform.
+
+**Production-Ready Deployment**: Mobile-optimized TensorFlow Lite models smaller than 5MB, scalable FastAPI backend with database replication, and multiple deployment options.
+
+### Technical Stack
+
+**Backend**: FastAPI with Python, PostgreSQL for data persistence, Redis for caching, and real-time WebSocket streaming.
+
+**Frontend**: Flutter for mobile (iOS/Android), React 18 with Vite for web dashboard, TypeScript for type safety.
+
+**Machine Learning**: TensorFlow for model training, scikit-learn for data preprocessing, Jupyter for notebook-based analysis.
+
+**Deployment**: Docker containerization, Gunicorn for production serving, support for AWS, Heroku, and traditional VPS infrastructure.
+
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 24+
-- Jupyter Notebook
+Before starting, ensure you have the following installed:
 
-### Setup & Training
+- Python 3.10 or higher
+- Node.js 16 or higher
+- Git for version control
+- Virtual environment tool (venv or conda)
+
+### System Setup
+
+**Step 1: Clone and navigate to the project**
 
 ```bash
-# Navigate to project
-cd healsense
+git clone <repository-url>
+cd HealSense
+```
 
-# Install Python dependencies
+**Step 2: Set up Python environment**
+
+```bash
+python -m venv venv
+source venv/bin/activate    # On Windows: venv\Scripts\activate
+pip install -r healsense/requirements.txt
+```
+
+**Step 3: Set up backend**
+
+```bash
+cd healsense/backend
 pip install -r requirements.txt
-
-# Generate synthetic training data
-python scripts/generate_synthetic_data.py
-
-# Train the LSTM model
-jupyter notebook notebooks/02_lstm_health_prediction.ipynb
-
-# Deploy to mobile (generates TFLite model)
-python scripts/deploy_model.py
+cp .env.example .env
+python init_db.py
+python run.py
 ```
 
-### Run Mobile App
+Backend will be available at http://localhost:5000
+
+**Step 4: Set up web dashboard**
 
 ```bash
-cd frontend/mobile-app
-npm install
-npx expo start
-```
-
-**Demo Account**: `umair@healsense.com` / `password123`
-
-### Run Web Dashboard
-
-```bash
-cd frontend/web-app
+cd healsense/frontend/web-app
 npm install
 npm run dev
 ```
 
-## 📁 Project Structure
+Dashboard will be available at http://localhost:8080
+
+**Step 5: Set up mobile app**
+
+```bash
+cd healsense/frontend/mobile-app
+flutter pub get
+flutter run
+```
+
+### Quick Demo
+
+**Backend API**: http://localhost:5000/api/docs
+
+**Web Dashboard**: http://localhost:8080 (Demo account: umair@healsense.com / password123)
+
+**Mobile App**: Run with `flutter run`
+
+## Project Structure
+
+The project is organized into several main components:
 
 ```
 healsense/
-├── data/
-│   ├── raw/                    # Source datasets
-│   │   ├── uci_heart_disease/  # UCI Heart Disease dataset
-│   │   ├── physionet_bidmc/    # PhysioNet BIDMC dataset
-│   │   ├── kaggle_health_data/ # Kaggle health datasets
-│   │   └── synthetic/          # Generated training data
-│   └── models/                 # Trained models
-│       ├── checkpoints/        # Training checkpoints
-│       ├── metadata/           # Model metadata & scalers
-│       └── tflite/            # Mobile-optimized models
+├── backend/                           # FastAPI REST API server
+│   ├── api/                          # FastAPI application code
+│   │   ├── routes/                   # API endpoint handlers
+│   │   ├── models/                   # Data models and schemas
+│   │   ├── services/                 # Business logic
+│   │   └── middleware/               # Request processing
+│   ├── alembic/                      # Database migrations
+│   ├── run.py                        # Development server
+│   └── requirements.txt              # Python dependencies
 │
-├── notebooks/                  # Jupyter notebooks
-│   ├── 01_data_exploration.ipynb
-│   └── 02_lstm_health_prediction.ipynb
+├── data/                             # Data and models directory
+│   ├── raw/                          # Raw datasets
+│   │   ├── uci_heart_disease/        # UCI ML Repository data
+│   │   ├── physionet_bidmc/          # PhysioNet BIDMC database
+│   │   ├── kaggle_health_data/       # Kaggle datasets
+│   │   └── synthetic/                # Generated training data
+│   ├── models/                       # Machine learning models
+│   │   ├── checkpoints/              # Training snapshots
+│   │   ├── metadata/                 # Preprocessing metadata
+│   │   └── tflite/                   # Mobile-optimized models
+│   └── processed/                    # Processed datasets
 │
-├── scripts/                    # Utility scripts
-│   ├── generate_synthetic_data.py  # Data generation
-│   ├── deploy_model.py            # Model deployment
-│   └── download_datasets.py       # Dataset downloaders
+├── notebooks/                        # Jupyter research notebooks
+│   ├── 01_data_exploration.ipynb     # Exploratory data analysis
+│   └── 02_lstm_health_prediction.ipynb  # Model training
+│
+├── scripts/                          # Utility and automation scripts
+│   ├── generate_synthetic_data.py    # Data generation
+│   ├── deploy_model.py               # Model deployment for mobile
+│   ├── download_datasets.py          # Dataset acquisition
+│   └── analyze_datasets.py           # Data analysis utilities
 │
 ├── frontend/
-│   ├── mobile-app/            # React Native + Expo app
-│   │   ├── src/
-│   │   │   ├── components/   # Reusable UI components
-│   │   │   ├── screens/      # App screens
-│   │   │   ├── contexts/     # State management
-│   │   │   ├── hooks/        # Custom React hooks
-│   │   │   └── types/        # TypeScript definitions
+│   ├── mobile-app/                   # Flutter mobile application
+│   │   ├── lib/                      # Dart/Flutter source code
+│   │   ├── android/                  # Android configuration
+│   │   ├── ios/                      # iOS configuration
+│   │   └── pubspec.yaml              # Dart dependencies
+│   │
+│   └── web-app/                      # React web dashboard
+│       ├── src/                      # React components and pages
+│       ├── public/                   # Static assets
+│       ├── package.json              # Node dependencies
+│       ├── vite.config.ts            # Build configuration
+│       └── tsconfig.json             # TypeScript configuration
+│
+├── docs/                             # Project documentation
+│   └── diagrams/                     # Architecture diagrams
+│
+├── PROJECT_COMPREHENSIVE_DOCUMENTATION.md  # Complete reference guide
+└── README.md                         # This file
+```
+
+## Component Details
+
+### Backend Service
+
+The backend is a FastAPI application providing a REST API for all client applications. It handles patient data management, vital sign ingestion, ML-based risk prediction, alert generation, and real-time WebSocket streaming.
+
+For detailed backend information, see [healsense/backend/README.md](healsense/backend/README.md)
+
+### Mobile Application
+
+The Flutter mobile app provides patients and family members with real-time access to health monitoring capabilities. Features include vital sign visualization, alert notifications, device management, and personal health history tracking.
+
+For mobile app details, see [healsense/frontend/mobile-app/README.md](healsense/frontend/mobile-app/README.md)
+
+### Web Dashboard
+
+The web dashboard is designed for healthcare providers to monitor multiple patients, track health trends, manage alerts, and generate health reports. Built with React and modern web technologies for a responsive, accessible experience.
+
+For web dashboard details, see [healsense/frontend/web-app/README.md](healsense/frontend/web-app/README.md)
+
+### Machine Learning Pipeline
+
+The ML component handles data preparation, model training, evaluation, and deployment. It includes Jupyter notebooks for experimentation and scripts for automated workflows.
+
+For ML pipeline details, see [healsense/README.md](healsense/README.md)
+
+## Database
+
+PostgreSQL is used for persistent data storage with the following main tables:
+
+- Patients: User demographics and profiles
+- Vital Signs: Time-series vital measurement records
+- Devices: Connected device information and status
+- Alerts: Health alerts and notifications
+- Users: Provider and administrator accounts
+
+Database schema and migrations are managed through Alembic for version control.
+
+## Configuration
+
+All configuration is managed through environment variables defined in `.env` files. Each component has its own configuration:
+
+**Backend** (.env in healsense/backend/):
+- Database connection URL
+- API secret keys and authentication settings
+- Redis cache configuration
+- External service credentials (OpenAI, Firebase, etc.)
+- Alert thresholds and ML model paths
+
+**Frontend**: Configuration through environment files and component constants
+
+For complete configuration details, see the PROJECT_COMPREHENSIVE_DOCUMENTATION.md file.
+
+## Running Components Individually
+
+### Backend Only
+
+```bash
+cd healsense/backend
+python run.py
+```
+
+### Web Dashboard Only
+
+```bash
+cd healsense/frontend/web-app
+npm install
+npm run dev
+```
+
+### Mobile App Only
+
+```bash
+cd healsense/frontend/mobile-app
+flutter run
+```
+
+### Notebooks (ML Training)
+
+```bash
+cd healsense
+jupyter notebook notebooks/
+```
+
+## Testing
+
+Test files are included to verify system functionality:
+
+```bash
+# Test backend database endpoints
+python healsense/backend/test_db_endpoints.py
+
+# Test phone sensor integration
+python healsense/test_phone_integration.py
+```
+
+## Documentation
+
+A comprehensive documentation file has been created with detailed information on:
+
+- System architecture and data flow
+- Complete API reference with examples
+- Database schema documentation
+- Deployment procedures
+- Configuration guidelines
+- Development setup instructions
+
+View the complete documentation: [PROJECT_COMPREHENSIVE_DOCUMENTATION.md](PROJECT_COMPREHENSIVE_DOCUMENTATION.md)
+
+## Deployment
+
+The project can be deployed in multiple ways:
+
+**Development**: Run locally with development servers for each component
+
+**Production**: Deploy backend on cloud infrastructure (AWS EC2, Heroku, Railway), web dashboard to static hosting (Vercel, Netlify), and mobile app to app stores
+
+**Docker**: Containerized deployment available for backend service
+
+For detailed deployment instructions, see the comprehensive documentation.
+
+## Development Workflow
+
+1. Create a feature branch from main
+2. Make code changes with clear commit messages
+3. Test changes locally across all components
+4. Create a pull request with description of changes
+5. Address code review feedback
+6. Merge to main after approval
+
+## Common Issues and Solutions
+
+**Backend not starting**: Verify PostgreSQL is running and DATABASE_URL in .env is correct
+
+**Mobile app connection issues**: Update API_BASE_URL in Flutter config to match backend address
+
+**Web dashboard showing no data**: Check that backend is running and accessible at configured API endpoint
+
+**ML model training too slow**: Enable GPU training with CUDA-compatible GPU or reduce dataset size for testing
+
+## Contributing
+
+Contributions are welcome. Please ensure code follows project conventions and includes appropriate tests.
+
+## Project Information
+
+This project was developed as a comprehensive health monitoring system combining IoT integration, machine learning, and modern user interface design. It serves as a practical implementation of healthcare technology concepts.
+
+Version: 1.0  
+Last Updated: April 2026
 │   │   └── package.json
 │   │
 │   └── web-app/               # React + Vite + Shadcn UI

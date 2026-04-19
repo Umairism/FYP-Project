@@ -1,103 +1,478 @@
 # HealSense Backend API
 
-FastAPI-based REST API for the HealSense health monitoring and prediction system.
+## FastAPI REST and Real-time WebSocket Server
 
-## 🚀 Quick Start
+The backend is a FastAPI-based HTTP REST API server that handles all business logic for the HealSense health monitoring system. It manages patient data, vital sign ingestion, machine learning model inference, alert generation, and real-time data streaming through WebSocket connections.
+
+## Overview
+
+The backend serves as the central hub connecting mobile and web clients with the PostgreSQL database, machine learning models, and external services. It provides comprehensive endpoints for patient management, device management, alert handling, and real-time vital sign streaming.
+
+## Quick Start
 
 ### Prerequisites
-- Python 3.10+
-- Virtual environment (automatically configured)
+
+You need the following installed on your system:
+
+- Python 3.10 or higher
+- git for version control
+- PostgreSQL (for database)
+- Redis (optional, for caching)
 
 ### Installation
 
+Navigate to the backend directory:
+
 ```bash
-# Navigate to backend directory
 cd healsense/backend
-
-# Virtual environment is already configured at project root
-# Dependencies are already installed
-
-# Copy environment file (already done)
-# cp .env.example .env
 ```
+
+The Python virtual environment and dependencies are configured at the project root. Install dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+
+Prepare the environment configuration:
+
+```bash
+cp .env.example .env
+```
+
+Edit the .env file with your configuration, especially:
+- DATABASE_URL pointing to your PostgreSQL instance
+- API security keys and secrets
+- External service credentials if applicable
 
 ### Running the Server
 
-**Development Mode (with auto-reload):**
+The backend can be run in development mode with auto-reload or production mode with Gunicorn.
+
+**Development Mode**
+
+For development with automatic code reloading:
+
 ```bash
 python run.py
 ```
 
-**Production Mode:**
+The server will start at http://localhost:5000 with auto-reload enabled.
+
+**Production Mode**
+
+For production deployment using Gunicorn with multiple worker processes:
+
 ```bash
 gunicorn api.app:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:5000
 ```
 
-**Using uvicorn directly:**
+**Using Uvicorn Directly**
+
+Alternatively, run Uvicorn directly:
+
 ```bash
 uvicorn api.app:app --host 0.0.0.0 --port 5000 --reload
 ```
 
-### Access Points
+### Database Setup
 
-- **API Root**: http://localhost:5000/
-- **Health Check**: http://localhost:5000/health
-- **Interactive API Docs (Swagger)**: http://localhost:5000/api/docs
-- **Alternative Docs (ReDoc)**: http://localhost:5000/api/redoc
+Initialize the database schema:
 
-### Realtime Streams
+```bash
+python init_db.py
+```
 
-- **Global live stream**: `ws://localhost:5000/ws/live`
-- **Patient stream**: `ws://localhost:5000/ws/patients/{patient_id}`
-- **Device stream**: `ws://localhost:5000/ws/devices/{device_id}`
+This creates all tables and seeds sample data. For database migrations after schema changes:
 
-## 📁 Project Structure
+```bash
+alembic upgrade head
+```
+
+### Access the API
+
+Once running, the API is accessible at several endpoints:
+
+**API Root**: Visit http://localhost:5000/ for general information
+
+**Health Check**: Visit http://localhost:5000/health for server health status
+
+**Interactive API Documentation**: Visit http://localhost:5000/api/docs for Swagger UI interactive documentation
+
+**Alternative Documentation**: Visit http://localhost:5000/api/redoc for ReDoc alternative documentation
+
+### Real-time Streaming
+
+The backend supports WebSocket connections for real-time vital sign streaming:
+
+**Global Stream**: Connect to ws://localhost:5000/ws/live for all vital sign updates across the system
+
+**Patient Stream**: Connect to ws://localhost:5000/ws/patients/{patient_id} for updates specific to a patient
+
+**Device Stream**: Connect to ws://localhost:5000/ws/devices/{device_id} for device status updates
+
+## Project Structure
+
+The backend is organized with clear separation of concerns:
 
 ```
 backend/
-├── api/
+├── api/                             # Main FastAPI application
 │   ├── __init__.py
-│   ├── app.py                 # Main FastAPI application
-│   ├── config.py              # Configuration management
-│   ├── routes/                # API endpoints
-│   │   └── __init__.py
-│   ├── models/                # Data models
+│   ├── app.py                       # FastAPI application initialization
+│   │   (CORS setup, middleware registration, route mounting, lifespan)
+│   ├── config.py                    # Configuration management
+│   │   (Environment variables, Pydantic settings)
+│   │
+│   ├── routes/                      # API endpoint handlers
 │   │   ├── __init__.py
-│   │   └── database/          # SQLAlchemy models
-│   │       └── __init__.py
-│   ├── services/              # Business logic
-│   │   └── __init__.py
-│   ├── middleware/            # Custom middleware
-│   │   └── __init__.py
-│   └── utils/                 # Utility functions
+│   │   ├── patients.py              # Patient CRUD endpoints
+│   │   ├── alerts.py                # Alert management endpoints
+│   │   ├── devices.py               # Device registration and management
+│   │   ├── ai.py                    # AI assistant endpoints
+│   │   └── realtime.py              # WebSocket endpoint handlers
+│   │
+│   ├── models/                      # Data models and schemas
+│   │   ├── __init__.py
+│   │   ├── schemas.py               # Pydantic request/response schemas
+│   │   └── database/                # SQLAlchemy database models
+│   │       ├── __init__.py
+│   │       ├── base.py              # Base model class
+│   │       ├── patient.py
+│   │       ├── vital_signs.py
+│   │       ├── device.py
+│   │       ├── alert.py
+│   │       ├── emergency.py
+│   │       └── user.py
+│   │
+│   ├── services/                    # Business logic services
+│   │   ├── __init__.py
+│   │   ├── patient_service.py       # Patient operations
+│   │   ├── alert_service.py         # Alert generation and management
+│   │   ├── ml_service.py            # Machine learning inference
+│   │   ├── realtime.py              # WebSocket connection management
+│   │   └── notification_service.py  # Alert notifications
+│   │
+│   ├── middleware/                  # Custom middleware
+│   │   ├── __init__.py
+│   │   ├── auth.py                  # Authentication middleware
+│   │   └── logging.py               # Request logging middleware
+│   │
+│   └── utils/                       # Utility functions
 │       ├── __init__.py
-│       └── logger.py          # Logging configuration
-├── tests/                     # Test suite
-├── .env                       # Environment variables (not in git)
-├── .env.example               # Environment template
-├── .gitignore                 # Git ignore patterns
-├── requirements.txt           # Python dependencies
-├── run.py                     # Development server script
-└── wsgi.py                    # WSGI entry point
-
+│       └── logger.py                # Structured logging setup
+│
+├── alembic/                         # Database migration system
+│   ├── env.py                       # Migration environment configuration
+│   ├── script.py.mako               # Migration script template
+│   ├── README                       # Migration usage guide
+│   └── versions/                    # Migration files
+│       └── b52623274ba1_add_phone_sensor_support_devicetype_.py
+│
+├── tests/                           # Test suite
+│   ├── test_db_endpoints.py         # Database endpoint tests
+│   └── test-integration.ps1         # Integration testing script
+│
+├── run.py                           # Development server launcher
+├── wsgi.py                          # Production WSGI application entry
+├── alembic.ini                      # Alembic configuration
+├── init_db.py                       # Database initialization script
+├── requirements.txt                 # Python dependencies
+├── verify-setup.ps1                 # Setup verification script
+├── .env.example                     # Environment variables template
+└── README.md                        # This file
 ```
 
-## 🔧 Configuration
+## Key Endpoints
 
-Edit `.env` file to configure:
+### Patient Management
 
-### Core Settings
-- `ENV` - Environment (development/production)
-- `DEBUG` - Debug mode (true/false)
-- `PORT` - Server port (default: 5000)
-- `SECRET_KEY` - JWT secret key (change in production!)
+**Get Patient**: GET /api/v1/patients/{patient_id}
 
-### Database
-- `DATABASE_URL` - PostgreSQL connection string
+Retrieves complete patient information including demographics and medical history.
+
+**Create Patient**: POST /api/v1/patients
+
+Creates a new patient record with provided information.
+
+**Get Patient Profile with Vitals**: GET /api/v1/patients/{patient_id}/profile
+
+Returns patient information along with latest vital signs and recent alerts.
+
+**Get Latest Vitals**: GET /api/v1/patients/{patient_id}/vitals/latest
+
+Returns the most recent vital sign measurement for a patient.
+
+**Get Vitals History**: GET /api/v1/patients/{patient_id}/vitals/history
+
+Returns historical vital signs within specified time window (query parameter: minutes).
+
+**Submit Vitals**: POST /api/v1/patients/{patient_id}/vitals
+
+Records a new vital sign measurement from any device source.
+
+### Alert Management
+
+**List Alerts**: GET /api/v1/alerts
+
+Returns all alerts, optionally filtered by patient, severity, or status.
+
+**Get Alert Details**: GET /api/v1/alerts/{alert_id}
+
+Returns detailed information about a specific alert.
+
+**Acknowledge Alert**: POST /api/v1/alerts/{alert_id}/acknowledge
+
+Marks an alert as acknowledged by a healthcare provider.
+
+**Dismiss Alert**: POST /api/v1/alerts/{alert_id}/dismiss
+
+Marks an alert as dismissed with optional reason.
+
+### Device Management
+
+**Get Device Info**: GET /api/v1/devices/{device_id}
+
+Returns detailed information about a device.
+
+**Get Device Status**: GET /api/v1/devices/{device_id}/status
+
+Returns current connection status, battery level, and signal strength.
+
+**Connect Device**: POST /api/v1/devices/{device_id}/connect
+
+Registers and pairs a device with a patient account.
+
+**Disconnect Device**: POST /api/v1/devices/{device_id}/disconnect
+
+Unregisters a device from a patient account.
+
+### AI Assistant
+
+**Get Providers**: GET /api/v1/ai/providers
+
+Lists available AI service providers (OpenAI, Gemini, etc.).
+
+**Chat with AI**: POST /api/v1/ai/chat
+
+Sends a message to the AI assistant for health guidance.
+
+## Configuration
+
+Configuration is managed through environment variables in the .env file. Key settings include:
+
+### Application Settings
+
+**ENV**: Development or production environment
+
+**DEBUG**: Enable debug logging
+
+**PROJECT_NAME**: Application name
+
+**API_V1_PREFIX**: Base path for API endpoints
+
+**HOST** and **PORT**: Server binding address and port
+
+### Security
+
+**SECRET_KEY**: JWT secret key for token signing (must be strong and unique in production)
+
+**ALGORITHM**: Token encryption algorithm (default: HS256)
+
+**ACCESS_TOKEN_EXPIRE_MINUTES**: How long before access tokens expire
+
+**ALLOWED_ORIGINS**: CORS-allowed origins for frontend applications
+
+### Database Connection
+
+**DATABASE_URL**: PostgreSQL connection string in format postgresql://user:password@host:port/database
+
+**ECHO_SQL**: Enable SQL query logging (dev only for debugging)
+
+### Cache and Real-time
+
+**REDIS_HOST** and **REDIS_PORT**: Redis server connection details (optional)
+
+**REDIS_PASSWORD**: Redis authentication if required
+
+### IoT Device Communication
+
+**MQTT_BROKER** and **MQTT_PORT**: MQTT broker for IoT devices
+
+**MQTT_TOPIC_PREFIX**: Topic prefix for MQTT messages
 
 ### External Services
-- `REDIS_HOST`, `REDIS_PORT` - Redis cache
-- `MQTT_BROKER`, `MQTT_PORT` - IoT device communication
+
+**OPENAI_API_KEY**: OpenAI API key for GPT models
+
+**OPENAI_MODEL**: GPT model name to use
+
+**GEMINI_API_KEY**: Google Gemini API key
+
+**GEMINI_MODEL**: Gemini model name to use
+
+### Machine Learning
+
+**LSTM_MODEL_PATH**: Path to trained LSTM model file
+
+**SCALER_PATH**: Path to fitted feature scaler
+
+**MODEL_VERSION**: Current model version in use
+
+### Alert Configuration
+
+**ALERT_THRESHOLDS**: JSON object defining alert thresholds for each vital
+
+## Database
+
+PostgreSQL is required for data persistence. The database schema includes:
+
+**Patients Table**: Patient demographic and profile information
+
+**Vital Signs Table**: Time-series vital measurement records
+
+**Devices Table**: Connected device information
+
+**Alerts Table**: Health alert records
+
+**Users Table**: Provider and administrator accounts
+
+**Emergencies Table**: Emergency event tracking
+
+Database migrations are managed through Alembic. After schema changes, create and apply migrations:
+
+```bash
+alembic revision --autogenerate -m "Description of changes"
+alembic upgrade head
+```
+
+## Testing
+
+Test vital functionality with included scripts:
+
+**Test Database Endpoints**
+
+```bash
+python test_db_endpoints.py
+```
+
+**Integration Tests**
+
+```bash
+.\test-integration.ps1
+```
+
+## Deployment
+
+### Development Deployment
+
+For local development, simply run:
+
+```bash
+python run.py
+```
+
+### Production Deployment
+
+For production, use Gunicorn:
+
+```bash
+gunicorn api.app:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:5000 --access-logfile - --error-logfile -
+```
+
+### Docker Deployment
+
+Build and run Docker container:
+
+```bash
+docker build -t healsense-backend .
+docker run -p 5000:5000 -e DATABASE_URL=postgresql://... healsense-backend
+```
+
+### Cloud Deployment
+
+The backend can be deployed to:
+- AWS EC2 instances
+- Heroku platform
+- DigitalOcean
+- Google Cloud Platform App Engine
+- Azure App Service
+
+## Troubleshooting
+
+**Server Fails to Start**
+
+Verify PostgreSQL is running and DATABASE_URL is correct. Check logs for detailed error messages.
+
+**Database Connection Errors**
+
+Ensure PostgreSQL service is running and credentials in .env are correct. Test connection with psql.
+
+**WebSocket Connection Refused**
+
+Check firewall settings allow WebSocket connections. Verify ws:// protocol is enabled in nginx/reverse proxy if applicable.
+
+**ML Model Not Found**
+
+Verify LSTM_MODEL_PATH and SCALER_PATH in .env point to valid files in data/models/ directory.
+
+**External Service Errors**
+
+Verify API keys for OpenAI and Gemini are valid. Check network connectivity to external services.
+
+## API Response Format
+
+All API responses follow a consistent format:
+
+**Success Response**: Returns data object with status and timestamp
+
+**Error Response**: Returns error message with status code and timestamp
+
+**List Responses**: Include pagination information with total count and page details
+
+## Performance Optimization
+
+The backend includes several optimization features:
+
+- Connection pooling for database efficiency
+- Redis caching for frequently accessed data
+- Indexed database queries for fast lookups
+- Async/await for non-blocking operations
+- JSON logging for efficient log aggregation
+
+## Security Considerations
+
+- All endpoints require JWT Bearer token authentication (except /health and /)
+- Passwords are hashed with bcrypt before storage
+- Database connections use SSL/TLS in production
+- CORS is configured to restrict cross-origin requests
+- Environment variables protect sensitive configuration
+
+## Monitoring
+
+The backend includes logging and monitoring capabilities:
+
+- Structured JSON logging for easy aggregation
+- Health check endpoint for service monitoring
+- Performance metrics collection
+- Error tracking and reporting
+
+Monitor the health endpoint regularly:
+
+```bash
+curl http://localhost:5000/health
+```
+
+## Support and Documentation
+
+For complete API documentation, see the PROJECT_COMPREHENSIVE_DOCUMENTATION.md file at the project root.
+
+For detailed endpoint documentation, visit the interactive Swagger UI at /api/docs when the server is running.
+
+## Version
+
+Version: 1.0  
+Last Updated: April 2026  
+Status: Production-Ready
 - `FIREBASE_CREDENTIALS_PATH` - Firebase integration
 
 ### ML Models
